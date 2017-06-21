@@ -3,27 +3,14 @@
 #include <math.h>
 #include <time.h>
 
-#define ERRO 3
+#include "mlp.h"
 
-/*
-typedef struct matrix{
-	
-}
-*/
-typedef struct model{
-	int hiddenlen, outlen, inlen;
-	long double** hiddenlayer;
-	long double** outputlayer;
-	long double(*function)( long double );
-	long double(*der)( long double );
-}model;
-
-long double* allocvector( int len ){
-	long double* ans = (long double*)malloc(sizeof(long double)*len );
+long double* alloc_vector( int length ){
+	long double* ans = (long double*)malloc(sizeof(long double)*length );
 	return ans;
 }
 
-long double** alocamatriz( int row, int col ){
+long double** alloc_matrix( int row, int col ){
 	long double** ans = (long double**)malloc(sizeof(long double*)*row);
 	int i;
 	for( i=0; i<row; i++ )
@@ -31,9 +18,9 @@ long double** alocamatriz( int row, int col ){
 	return ans;
 }
 
-void freematriz( long double** mat, int row, int col ){
+void free_matrix( long double** mat, int row, int col ){
 	int i;
-	for( i=0; i<col; i++ )
+	for( i=0; i<row; i++ )
 		free( mat[i] );
 	free( mat );
 }
@@ -46,23 +33,26 @@ void fill( long double** matriz, int row, int col ){
 			matriz[i][j] = (float)( rand()%1000 )/1000.0 - 0.5;
 }
 
-model* buildmodel( int hiddenlen, int outlen, int inlen, long double(*function)(long double) , long double(*der)(long double)  ){
+model* build_model( int hidden_length, int output_length, int input_length,
+		  long double(*function)(long double) , long double(*derivative)(long double)  ){
+
 	model*  m = (model*)malloc(sizeof(model));
-	m->hiddenlen = hiddenlen;
-	m->inlen = inlen;
-	m->outlen = outlen;
+	m->hidden_length = hidden_length;
+	m->input_length = input_length;
+	m->output_length = output_length;
 	m->function = function;
-	m->der = der;
-	m->hiddenlayer = alocamatriz( m->hiddenlen, m->inlen + 1 );
-	m->outputlayer = alocamatriz( m->outlen, m->hiddenlen + 1 );
-	fill( m->hiddenlayer, m->hiddenlen, m->inlen + 1 );
-	fill( m->outputlayer, m->outlen, m->hiddenlen + 1 );
+	m->derivative = derivative;
+	m->hidden_layer = alloc_matrix( m->hidden_length, m->input_length + 1 );
+	m->output_layer = alloc_matrix( m->output_length, m->hidden_length + 1 );
+	fill( m->hidden_layer, m->hidden_length, m->input_length + 1 );
+	fill( m->output_layer, m->output_length, m->hidden_length + 1 );
+
 	return m;
 }
 
-void freemodel( model* m ){
-	freematriz( m->hiddenlayer, m->hiddenlen, m->inlen + 1 );
-	freematriz( m->outputlayer, m->outlen, m->hiddenlen + 1 );
+void free_model( model* m ){
+	free_matrix( m->hidden_layer, m->hidden_length, m->input_length + 1 );
+	free_matrix( m->output_layer, m->output_length, m->hidden_length + 1 );
 	free( m );
 }
 
@@ -73,11 +63,12 @@ long double sigmoid( long double gamma ){
                 return 1.0/(1.0 + pow( M_E, -gamma));
 }
 
-long double der_sigmoid( long double gamma ){
+long double sigmoid_derivative( long double gamma ){
 	return ( sigmoid(gamma)*( 1.0 - sigmoid(gamma) ) );
 }
 
-void findnet( long double** layer, int nrow, int ncol , long double* vetor, long double* net ){
+void compute_net( long double** layer, int nrow, int ncol,
+ 		  long double* vetor, long double* net ){
 	int i, j;
 	for( i=0; i<nrow; i++ ){
 		net[i] = 0;
@@ -89,36 +80,44 @@ void findnet( long double** layer, int nrow, int ncol , long double* vetor, long
 
 long double* run( model* m, long double* vetor ){
 	int i;
-	long double* net_hidden = allocvector( m->hiddenlen );
-	findnet( m->hiddenlayer, m->hiddenlen, m->inlen + 1, vetor, net_hidden );
-	for( i=0; i<m->hiddenlen; i++ )
-		net_hidden[i] = m->function( net_hidden[i] );
-	long double* net_output = allocvector(m->outlen );
-	findnet( m->outputlayer, m->outlen, m->hiddenlen + 1, net_hidden /*now f_hidden!*/, net_output );
-	for( i=0; i<m->outlen; i++ )
-		net_output[i] = m->function( net_output[i] );
+
+	long double* net_hidden = alloc_vector( m->hidden_length );
+	long double* net_output = alloc_vector(m->output_length );
+	long double* f_hidden = alloc_vector( m->hidden_length );
+	long double* f_output = alloc_vector(m->output_length );
+
+	compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, vetor, net_hidden );
+	apply( m->function, f_hidden, net_hidden, m->hidden_length );
+	compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+	apply( m->function, f_output, net_output, m->output_length );
+
 	free( net_hidden );
-	return net_output;
+	free( f_hidden );
+	free( net_output );
+	free( f_output );
+
+	return f_output; // now f_output!
+
 }
 
-long double* copy( long double* vetor, int len ){
-	long double* ans = (long double*)malloc(sizeof(long double)*len);
+long double* copy( long double* vetor, int length ){
+	long double* ans = (long double*)malloc(sizeof(long double)*length);
 	int i;
-	for( i=0; i<len; i++ )
+	for( i=0; i<length; i++ )
 		ans[i] = vetor[i];
 	return ans;
 }
 
-void apply( long double(*function)(long double), long double* vetor, long double* source, int len ){
+void apply( long double(*function)(long double), long double* vetor, long double* source, int length ){
 	int i;
-	for( i=0; i<len; i++ ){
+	for( i=0; i<length; i++ ){
 		vetor[i] = function( source[i] );
 	}
 }
 
-void printvector( long double* vec, int len ){
+void printvector( long double* vec, int length ){
 	int i=0;
-	for( i=0; i<len; i++ ){
+	for( i=0; i<length; i++ ){
 		printf("%Lf ", vec[i] );
 	}
 	printf("\n");
@@ -135,64 +134,62 @@ void printmatrix( long double** vec, int nrow, int ncol ){
 	printf("\n");
 }
 
-void training( model* m, long double** sample, long double** expected, int len, long double precision, long double rate, int limit ){
+void training( model* m, long double** sample, long double** expected, int length, long double precision, long double rate, int limit ){
 	long double error, delta;
 	int it = 0, j, i, k,l;
-	long double *temp, *df_output, *delta_e ,*df_hidden, *net_hidden, *f_hidden, *net_output, *f_output,  *delta_o, *delta_h;
+	long double *temp, *delta_o, *delta_h, *delta_e ,*df_hidden, *df_output, *net_hidden, *f_hidden, *net_output, *f_output;
 
-	delta_e = allocvector( m->outlen );
-	delta_o = allocvector( m->outlen );
-	delta_h = allocvector( m->hiddenlen );
-	net_hidden = allocvector( m->hiddenlen );
-	net_output = allocvector( m->outlen );
-	f_hidden = allocvector( m->hiddenlen );
-	df_hidden = allocvector( m->hiddenlen );
-	f_output = allocvector( m->outlen );
-	df_output = allocvector( m->outlen );
+	delta_e = alloc_vector( m->output_length );
+	delta_o = alloc_vector( m->output_length );
+	delta_h = alloc_vector( m->hidden_length );
+	net_hidden = alloc_vector( m->hidden_length );
+	net_output = alloc_vector( m->output_length );
+	f_hidden = alloc_vector( m->hidden_length );
+	df_hidden = alloc_vector( m->hidden_length );
+	f_output = alloc_vector( m->output_length );
+	df_output = alloc_vector( m->output_length );
 
 	do{
 		error = 0;
-		for( j=0; j < len; j++){
+		for( j=0; j < length; j++){
 
-			findnet( m->hiddenlayer, m->hiddenlen, m->inlen + 1, sample[j], net_hidden );
-			apply( m->function, f_hidden, net_hidden, m->hiddenlen );
-			apply( m->der, df_hidden, net_hidden, m->hiddenlen );
+			compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, sample[j], net_hidden );
+			apply( m->function, f_hidden, net_hidden, m->hidden_length );
+			apply( m->derivative, df_hidden, net_hidden, m->hidden_length );
 			
-			findnet( m->outputlayer, m->outlen, m->hiddenlen + 1, f_hidden , net_output );
-			apply( m->function, f_output, net_output, m->outlen );
-			apply( m->der, df_output, net_output, m->outlen );
+			compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+			apply( m->function, f_output, net_output, m->output_length );
+			apply( m->derivative, df_output, net_output, m->output_length );
 
-			for( i=0; i<m->outlen; i++ ){
+			for( i=0; i<m->output_length; i++ ){
 				delta_e[i] = ( -f_output[i] + expected[j][i] );
 				error += delta_e[i]*delta_e[i];
+				delta_o[i] = delta_e[i] * df_output[i];
 			}
 
-			for( i=0; i< m->outlen; i++ )
-				delta_o[i] = delta_e[i] * df_output[i];
-
-			for( i=0; i<m->hiddenlen; i++ ){
+			for( i=0; i<m->hidden_length; i++ ){
 			    long double aux = 0;
-			    for( k=0; k < m->outlen; k++ )
-				aux += m->outputlayer[k][i] * delta_o[k] ;
+			    for( k=0; k < m->output_length; k++ )
+				aux += m->output_layer[k][i] * delta_o[k] ;
 			    delta_h[i] = aux * df_hidden[i];
 			}
 			// atualizing hidden layer
-			for( i=0; i<m->hiddenlen; i++ ){
-				for( k=0; k< m->inlen ; k++ )
-					m->hiddenlayer[i][k] += delta_h[i] * rate * sample[j][k];
-				m->hiddenlayer[i][ m->inlen ] += delta_h[i] * rate;
+			for( i=0; i<m->hidden_length; i++ ){
+				for( k=0; k< m->input_length ; k++ )
+					m->hidden_layer[i][k] += delta_h[i] * rate * sample[j][k];
+				m->hidden_layer[i][ m->input_length ] += delta_h[i] * rate;
 			}
 
-			for( i=0; i<m->outlen; i++ ){
-				for( k=0; k< m->hiddenlen; k++ )
-					m->outputlayer[i][k] += delta_o[i] * rate * f_hidden[k];
-				m->outputlayer[i][ m->hiddenlen ] += delta_o[i] * rate;
+			for( i=0; i<m->output_length; i++ ){
+				for( k=0; k< m->hidden_length; k++ )
+					m->output_layer[i][k] += delta_o[i] * rate * f_hidden[k];
+				m->output_layer[i][ m->hidden_length ] += delta_o[i] * rate;
 			}
 
 		}
-		error = error /= len;
+		error = error / length ;
 		it++;
-		printf("%d average error is %Lf\n", it ,error ); 
+		printf("%d average error is %Lf percent\n", it ,error*100 ); 
 	}while( error > precision && it < limit );
 
 	free( delta_e );
@@ -206,7 +203,7 @@ void training( model* m, long double** sample, long double** expected, int len, 
 	free( df_output );
 }
 
-void zerarmatriz( long double** mat, int row, int col ){
+void zero_matrix( long double** mat, int row, int col ){
 	int i, j;
 	for( i=0; i<row; i++ ){
 		for( j=0; j<col; j++ ){
@@ -215,50 +212,20 @@ void zerarmatriz( long double** mat, int row, int col ){
 	}
 }
 
-int main(){ 
-	FILE* arq = fopen("parsed_train.csv", "r" );
-	FILE* que = fopen("parsed_test.csv", "r" );
-	size = 42000;
-
-	long double** sample = alocamatriz( size, 28*28 );
-	long double** expected = alocamatriz( size, 10 );
-	long double** queries = alocamatriz( 20000, 28*28 );
-	zerarmatriz( sample, size, 28*28 );
-	zerarmatriz( expected, size, 10 );
-	int i, j, k, a;
-
-	for( i=0; fscanf( arq,"%d", &a ) != EOF && i < size ; i++ ){
-		expected[i][ a ] = 1;
-		for( j=0; j<28*28; j++ ){
-			long double b;
-			fscanf( arq, "%Lf", &b );
-			sample[i][j] = b /255.0 ;
-		}
+long double** predict( model* m,  long double** queries, int length ){
+	long double** answers = (long double**)malloc(sizeof(long double*)*length );
+	int i;
+	for( i=0; i<length; i++ ){
+		long double* temp = run( m,  queries[i] );
+		answers[i] = temp;
 	}
+	return answers;
+}
 
-	for( i=0; fscanf( arq,"%d", &a ) != EOF && i < size ; i++ ){
-		expected[i][ a ] = 1;
-		for( j=0; j<28*28; j++ ){
-			long double b;
-			fscanf( arq, "%Lf", &b );
-			sample[i][j] = b /255.0 ;
-		}
-	}
-
-	long double(*function)(long double);
-	function = sigmoid;
-	long double(*der)(long double);
-	der = der_sigmoid; 
-
-	model* m = buildmodel( 8, 10, 28*28, function, der);
-
-	training( m, sample, expected, 15000, 0.01, 0.1, 600 );
-
-	freematriz( sample, size, 28*28 );
-	freematriz( expected, size, 10 );
-	freematriz( queries, 20000, 28*28 );
-
-	fclose( que );
-	fclose( arq );
-	return 0;
+int argmax( long double* vetor, int length ){
+	int i, j = 0;
+	for( i=1; i < length; i ++ )
+		if( vetor[i] > vetor[j] )
+			j = i;
+	return j;
 }
