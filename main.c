@@ -11,7 +11,7 @@ int main(){
 
 	FILE* arq = fopen("parsed_train.csv", "r" );
 	FILE* que = fopen("parsed_test.csv", "r" );
-	FILE* result = fopen("mnist_result5.csv", "w");
+	FILE* result = fopen("mnist_result3.csv", "w");
 
 	long double** sample = alloc_matrix( size, 28*28 );
 	long double** expected = alloc_matrix( size, 10 );
@@ -45,7 +45,7 @@ int main(){
 	long double(*derivative)(long double);
 	derivative = sigmoid_derivative; 
 	model* m = build_model( 20, 10, 28*28, function, derivative);
-	training( m, sample, expected, size, 0.001, 0.1, 1000 );
+	training( m, sample, expected, size, 0.001, 0.1, 500 );
 
 	printf("predicting...\n");
 	fprintf( result, "ImageId,Label\n" );
@@ -61,5 +61,3 @@ int main(){
 	fclose( arq );
 	return 0;
 }
-
-

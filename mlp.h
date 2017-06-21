@@ -9,7 +9,6 @@ typedef struct neuron{
 	double* weigth;
 	double bias;
 } neuron;
-
 typedef struct model{
 	int hidden_length, output_length, input_length;
 	neuron* hidden_layer;
@@ -17,7 +16,6 @@ typedef struct model{
 	long double(*function)( long double );
 	long double(*derivative)( long double );
 } model;
-
 */
 
 typedef struct model{

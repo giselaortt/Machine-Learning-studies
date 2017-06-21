@@ -1,10 +1,10 @@
 parsefile:
 	python parse_arq.py
 
-mlp.o:
+mlp:
 	cc -c  mlp.c
 
 main:
 	cc main.c mlp.o -o ex -lm
 
-all: parsefile mlp.o main
+all: parsefile mlp main

@@ -123,6 +123,37 @@ void printvector( long double* vec, int length ){
 	printf("\n");
 }
 
+void predict( model* m, long double** queries, int length, FILE* fp ){
+	int i;
+
+	long double* net_hidden = alloc_vector( m->hidden_length );
+	long double* net_output = alloc_vector(m->output_length );
+	long double* f_hidden = alloc_vector( m->hidden_length );
+	long double* f_output = alloc_vector(m->output_length );
+
+	for( i=0; i<length; i++ ){
+		compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, queries[i], net_hidden );
+		apply( m->function, f_hidden, net_hidden, m->hidden_length );
+		compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+		apply( m->function, f_output, net_output, m->output_length );
+
+		fprintf(fp, "%d,%d\n", i+1, argmax( f_output, m->output_length ) );
+
+	}
+
+	free( net_hidden );
+	free( f_hidden );
+	free( net_output );
+	free( f_output );
+}
+
+int argmax( long double* vetor, int length ){
+	int i, j = 0;
+	for( i=1; i < length; i ++ )
+		if( vetor[i] > vetor[j] )
+			j = i;
+	return j;
+}
 void printmatrix( long double** vec, int nrow, int ncol ){
 	int i, j;
 	for( i=0; i<nrow; i++ ){
@@ -134,6 +165,14 @@ void printmatrix( long double** vec, int nrow, int ncol ){
 	printf("\n");
 }
 
+void zero_matrix( long double** mat, int row, int col ){
+	int i, j;
+	for( i=0; i<row; i++ ){
+		for( j=0; j<col; j++ ){
+			mat[i][j] = 0;
+		}
+	}
+}
 void training( model* m, long double** sample, long double** expected, int length, long double precision, long double rate, int limit ){
 	long double error, delta;
 	int it = 0, j, i, k,l;
@@ -201,31 +240,4 @@ void training( model* m, long double** sample, long double** expected, int lengt
 	free( df_hidden);
 	free( f_output );
 	free( df_output );
-}
-
-void zero_matrix( long double** mat, int row, int col ){
-	int i, j;
-	for( i=0; i<row; i++ ){
-		for( j=0; j<col; j++ ){
-			mat[i][j] = 0;
-		}
-	}
-}
-
-long double** predict( model* m,  long double** queries, int length ){
-	long double** answers = (long double**)malloc(sizeof(long double*)*length );
-	int i;
-	for( i=0; i<length; i++ ){
-		long double* temp = run( m,  queries[i] );
-		answers[i] = temp;
-	}
-	return answers;
-}
-
-int argmax( long double* vetor, int length ){
-	int i, j = 0;
-	for( i=1; i < length; i ++ )
-		if( vetor[i] > vetor[j] )
-			j = i;
-	return j;
 }
