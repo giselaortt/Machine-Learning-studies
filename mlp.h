@@ -53,14 +53,14 @@ long double* copy( long double* vetor, int len );
 
 void apply( long double(*function)(long double), long double* vetor, long double* source, int len );
 
-void printvector( long double* vec, int len );
+void print_vector( long double* vec, int len );
 
-void printmatrix( long double** vec, int nrow, int ncol );
+void print_matrix( long double** vec, int nrow, int ncol );
 
 void training( model* m, long double** sample, long double** expected, int len, long double precision, long double rate, int limit );
 
 void zero_matrix( long double** mat, int row, int col );
 
-long double** predict( model* m, long double** queries, int len );
+void predict( model* m, long double** queries, int length, FILE* fp );
 
 int argmax( long double* vetor, int length );

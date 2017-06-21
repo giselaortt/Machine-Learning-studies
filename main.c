@@ -6,19 +6,20 @@
 #include "mlp.h"
 
 int main(){
+	int size = 42000;
+	int i, j, k, a;
+
 	FILE* arq = fopen("parsed_train.csv", "r" );
 	FILE* que = fopen("parsed_test.csv", "r" );
-	FILE* result = fopen("mnist_result2.csv", "w");
-	int size = 42000;
+	FILE* result = fopen("mnist_result5.csv", "w");
 
 	long double** sample = alloc_matrix( size, 28*28 );
 	long double** expected = alloc_matrix( size, 10 );
 	long double** queries = alloc_matrix( 28000, 28*28 );
+
 	zero_matrix( sample, size, 28*28 );
 	zero_matrix( queries, 28000, 28*28 );
 	zero_matrix( expected, size, 10 );
-	int i, j, k, a;
-
 	printf("reading...\n");
 
 	for( i=0; fscanf( arq,"%d", &a ) != EOF && i < size ; i++ ){
@@ -37,25 +38,20 @@ int main(){
 			queries[i][j] = b /255.0 ;
 		}
 	}
-	printf("training...\n");
 
+	printf("training...\n");
 	long double(*function)(long double);
 	function = sigmoid;
 	long double(*derivative)(long double);
 	derivative = sigmoid_derivative; 
-	model* m = build_model( 8, 10, 28*28, function, derivative);
-	training( m, sample, expected, size, 0.001, 0.1, 500 );
-	fprintf( result, "ImageId,Label\n" );
-	printf("predicting...\n");
-	long double** answers = predict( m, queries, 28000 );
+	model* m = build_model( 20, 10, 28*28, function, derivative);
+	training( m, sample, expected, size, 0.001, 0.1, 1000 );
 
-	for( i=0; i < 28000; i++ ){
-		int res = argmax( answers[i], 10 );
-		fprintf( result, "%d,%d\n", i, res );
-	}
+	printf("predicting...\n");
+	fprintf( result, "ImageId,Label\n" );
+	predict( m, queries, 28000, result );
 
 	free_model( m );
-	free_matrix( answers, 28000, 10 );
 	free_matrix( sample, size, 28*28 );
 	free_matrix( expected, size, 10 );
 	free_matrix( queries, 28000, 28*28 );
