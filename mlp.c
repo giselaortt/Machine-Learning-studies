@@ -25,16 +25,64 @@ void free_matrix( long double** mat, int row, int col ){
 	free( mat );
 }
 
-void fill( long double** matriz, int row, int col ){
-	srand(time(NULL));
+void print_vector( long double* vec, int length ){
+	int i=0;
+	for( i=0; i<length; i++ )
+		printf("%Lf ", vec[i] );
+	printf("\n");
+}
+
+void print_matrix( long double** matrix, int nrow, int ncol ){
+	int i, j;
+	for( i=0; i<nrow; i++ )
+		for( j=0; j<ncol; j++ )
+			printf("%Lf ", matrix[i][j] );
+		printf("\n");
+	printf("\n");
+}
+
+void zero_matrix( long double** mat, int row, int col ){
 	int i, j;
 	for( i=0; i<row; i++ )
 		for( j=0; j<col; j++ )
-			matriz[i][j] = (float)( rand()%1000 )/1000.0 - 0.5;
+			mat[i][j] = 0;
+}
+
+void fill( neuron** layer, int number_of_neuron, int number_of_weigths ){
+	srand(time(NULL));
+	int i, j;
+	for( i=0; i<number_of_neuron; i++ ){
+		for( j=0; j<number_of_weigths; j++ )
+			layer[i]->weigths[j] = (float)( rand()%1000 )/1000.0 - 0.5;
+		layer[i]->bias = (float)( rand()%1000 )/1000.0 - 0.5;
+	}
+}
+
+
+int argmax( long double* vetor, int length ){
+	int i, j = 0;
+	for( i=1; i < length; i ++ )
+		if( vetor[i] > vetor[j] )
+			j = i;
+	return j;
+}
+
+neuron* alloc_neuron( int number_of_weigths ){
+	neuron* answer = (neuron*)malloc(sizeof(neuron)*number_of_weigths );
+	answer->weigths = alloc_vector( number_of_weigths );
+	return answer;
+}
+
+neuron** alloc_layer( int number_of_neurons, int number_of_weigths ){
+	neuron** answer = (neuron**)malloc(sizeof(neuron)*number_of_neurons);
+	int i;
+	for( i=0; i<number_of_neurons; i++ )
+		answer[i] = alloc_neuron( number_of_weigths );
+	return answer;
 }
 
 model* build_model( int hidden_length, int output_length, int input_length,
-		  long double(*function)(long double) , long double(*derivative)(long double)  ){
+		  long double(*function)(long double) , long double(*derivative)(long double)){
 
 	model*  m = (model*)malloc(sizeof(model));
 	m->hidden_length = hidden_length;
@@ -42,53 +90,74 @@ model* build_model( int hidden_length, int output_length, int input_length,
 	m->output_length = output_length;
 	m->function = function;
 	m->derivative = derivative;
-	m->hidden_layer = alloc_matrix( m->hidden_length, m->input_length + 1 );
-	m->output_layer = alloc_matrix( m->output_length, m->hidden_length + 1 );
-	fill( m->hidden_layer, m->hidden_length, m->input_length + 1 );
-	fill( m->output_layer, m->output_length, m->hidden_length + 1 );
+	m->hidden_layer = alloc_layer( m->hidden_length, m->input_length );
+	m->output_layer = alloc_layer( m->output_length, m->hidden_length );
+	fill( m->hidden_layer, m->hidden_length, m->input_length );
+	fill( m->output_layer, m->output_length, m->hidden_length );
 
 	return m;
 }
 
+void free_neuron( neuron* myneuron ){
+	free( myneuron->weigths );
+	free( myneuron );
+}
+
+void free_layer( neuron** layer, int number_of_neurons ){
+	int i, j;
+	for( i=0; i<number_of_neurons; i++)
+		free_neuron( layer[i] );
+	free( layer );
+}
+
 void free_model( model* m ){
-	free_matrix( m->hidden_layer, m->hidden_length, m->input_length + 1 );
-	free_matrix( m->output_layer, m->output_length, m->hidden_length + 1 );
+	free_layer( m->hidden_layer, m->hidden_length );
+	free_layer( m->output_layer, m->output_length );
 	free( m );
 }
 
-long double sigmoid( long double gamma ){
-        if( gamma < 0 )
-                return 1.0 - 1.0/(1.0 + pow( M_E ,gamma));
+long double sigmoid( long double x ){
+        if( x < 0 )
+                return 1.0 - 1.0/(1.0 + pow( M_E , x ));
         else
-                return 1.0/(1.0 + pow( M_E, -gamma));
+                return 1.0/(1.0 + pow( M_E, -x ));
 }
 
-long double sigmoid_derivative( long double gamma ){
-	return ( sigmoid(gamma)*( 1.0 - sigmoid(gamma) ) );
+long double sigmoid_derivative( long double x ){
+	return ( sigmoid( x )*( 1.0 - sigmoid( x ) ) );
 }
 
-void compute_net( long double** layer, int nrow, int ncol,
- 		  long double* vetor, long double* net ){
+void apply( long double(*function)(long double),
+		long double* output, long double* source, int length ){
+	
+	int i;
+	for( i=0; i<length; i++ )
+		output[i] = function( source[i] );
+}
+
+void compute_net( neuron** layer, int number_of_neurons, int number_of_weigths,
+ 		long double* vetor, long double* net ){
+
 	int i, j;
-	for( i=0; i<nrow; i++ ){
+	for( i=0; i<number_of_neurons; i++ ){
 		net[i] = 0;
-		for( j=0; j<ncol - 1; j++ )
-			net[i] += layer[i][j]*vetor[j];
-		net[i] += layer[i][ ncol -1 ]; // bias!
+		for( j=0; j<number_of_weigths; j++ )
+			net[i] += layer[i]->weigths[j]*vetor[j];
+		net[i] += layer[i]->bias;
 	}
 }
 
-long double* run( model* m, long double* vetor ){
+long double* run( model* m, long double* input ){
 	int i;
 
 	long double* net_hidden = alloc_vector( m->hidden_length );
-	long double* net_output = alloc_vector(m->output_length );
+	long double* net_output = alloc_vector( m->output_length );
 	long double* f_hidden = alloc_vector( m->hidden_length );
-	long double* f_output = alloc_vector(m->output_length );
+	long double* f_output = alloc_vector( m->output_length );
 
-	compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, vetor, net_hidden );
+	compute_net( m->hidden_layer, m->hidden_length, m->input_length, input, net_hidden );
 	apply( m->function, f_hidden, net_hidden, m->hidden_length );
-	compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+	compute_net( m->output_layer, m->output_length, m->hidden_length, f_hidden , net_output );
 	apply( m->function, f_output, net_output, m->output_length );
 
 	free( net_hidden );
@@ -96,31 +165,7 @@ long double* run( model* m, long double* vetor ){
 	free( net_output );
 	free( f_output );
 
-	return f_output; // now f_output!
-
-}
-
-long double* copy( long double* vetor, int length ){
-	long double* ans = (long double*)malloc(sizeof(long double)*length);
-	int i;
-	for( i=0; i<length; i++ )
-		ans[i] = vetor[i];
-	return ans;
-}
-
-void apply( long double(*function)(long double), long double* vetor, long double* source, int length ){
-	int i;
-	for( i=0; i<length; i++ ){
-		vetor[i] = function( source[i] );
-	}
-}
-
-void printvector( long double* vec, int length ){
-	int i=0;
-	for( i=0; i<length; i++ ){
-		printf("%Lf ", vec[i] );
-	}
-	printf("\n");
+	return f_output;
 }
 
 void predict( model* m, long double** queries, int length, FILE* fp ){
@@ -132,13 +177,11 @@ void predict( model* m, long double** queries, int length, FILE* fp ){
 	long double* f_output = alloc_vector(m->output_length );
 
 	for( i=0; i<length; i++ ){
-		compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, queries[i], net_hidden );
+		compute_net( m->hidden_layer, m->hidden_length, m->input_length, queries[i], net_hidden );
 		apply( m->function, f_hidden, net_hidden, m->hidden_length );
-		compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+		compute_net( m->output_layer, m->output_length, m->hidden_length, f_hidden , net_output );
 		apply( m->function, f_output, net_output, m->output_length );
-
 		fprintf(fp, "%d,%d\n", i+1, argmax( f_output, m->output_length ) );
-
 	}
 
 	free( net_hidden );
@@ -147,36 +190,12 @@ void predict( model* m, long double** queries, int length, FILE* fp ){
 	free( f_output );
 }
 
-int argmax( long double* vetor, int length ){
-	int i, j = 0;
-	for( i=1; i < length; i ++ )
-		if( vetor[i] > vetor[j] )
-			j = i;
-	return j;
-}
-void printmatrix( long double** vec, int nrow, int ncol ){
-	int i, j;
-	for( i=0; i<nrow; i++ ){
-		for( j=0; j<ncol; j++ ){
-			printf("%Lf ", vec[i][j] );
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
-
-void zero_matrix( long double** mat, int row, int col ){
-	int i, j;
-	for( i=0; i<row; i++ ){
-		for( j=0; j<col; j++ ){
-			mat[i][j] = 0;
-		}
-	}
-}
-void training( model* m, long double** sample, long double** expected, int length, long double precision, long double rate, int limit ){
+void training( model* m, long double** sample, long double** expected,
+		int length, long double precision, long double rate, int limit ){
 	long double error, delta;
 	int it = 0, j, i, k,l;
-	long double *temp, *delta_o, *delta_h, *delta_e ,*df_hidden, *df_output, *net_hidden, *f_hidden, *net_output, *f_output;
+	long double *temp, *delta_o, *delta_h, *delta_e ,*df_hidden;
+	long double *df_output, *net_hidden, *f_hidden, *net_output, *f_output;
 
 	delta_e = alloc_vector( m->output_length );
 	delta_o = alloc_vector( m->output_length );
@@ -192,11 +211,11 @@ void training( model* m, long double** sample, long double** expected, int lengt
 		error = 0;
 		for( j=0; j < length; j++){
 
-			compute_net( m->hidden_layer, m->hidden_length, m->input_length + 1, sample[j], net_hidden );
+			compute_net( m->hidden_layer, m->hidden_length, m->input_length, sample[j], net_hidden );
 			apply( m->function, f_hidden, net_hidden, m->hidden_length );
 			apply( m->derivative, df_hidden, net_hidden, m->hidden_length );
 			
-			compute_net( m->output_layer, m->output_length, m->hidden_length + 1, f_hidden , net_output );
+			compute_net( m->output_layer, m->output_length, m->hidden_length, f_hidden , net_output );
 			apply( m->function, f_output, net_output, m->output_length );
 			apply( m->derivative, df_output, net_output, m->output_length );
 
@@ -209,22 +228,21 @@ void training( model* m, long double** sample, long double** expected, int lengt
 			for( i=0; i<m->hidden_length; i++ ){
 			    long double aux = 0;
 			    for( k=0; k < m->output_length; k++ )
-				aux += m->output_layer[k][i] * delta_o[k] ;
+					aux += m->output_layer[k]->weigths[i] * delta_o[k] ;
 			    delta_h[i] = aux * df_hidden[i];
 			}
 			// atualizing hidden layer
 			for( i=0; i<m->hidden_length; i++ ){
 				for( k=0; k< m->input_length ; k++ )
-					m->hidden_layer[i][k] += delta_h[i] * rate * sample[j][k];
-				m->hidden_layer[i][ m->input_length ] += delta_h[i] * rate;
+					m->hidden_layer[i]->weigths[k] += delta_h[i] * rate * sample[j][k];
+				m->hidden_layer[i]->bias += delta_h[i] * rate;
 			}
-
+			// atualizing output
 			for( i=0; i<m->output_length; i++ ){
 				for( k=0; k< m->hidden_length; k++ )
-					m->output_layer[i][k] += delta_o[i] * rate * f_hidden[k];
-				m->output_layer[i][ m->hidden_length ] += delta_o[i] * rate;
+					m->output_layer[i]->weigths[k] += delta_o[i] * rate * f_hidden[k];
+				m->output_layer[i]->bias += delta_o[i] * rate;
 			}
-
 		}
 		error = error / length ;
 		it++;
