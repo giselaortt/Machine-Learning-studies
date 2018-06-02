@@ -36,3 +36,4 @@ def distance( vector, other_vector ):
 
 	return np.sqrt( np.sum((vector - other_vector)**2))
 
+
