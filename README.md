@@ -1,6 +1,6 @@
-###Projetos feitos com objetivos educacionais.
+Projetos feitos com objetivos educacionais.
 
-#Fontes:
+Fontes:
 Reimplementando os projetos em python conforme os vídeos desse canal (olhar a playlist de aprendizado de máquina):
 https://www.youtube.com/channel/UCMSGXqLEE1q5NqG3hjA5vCg
 
