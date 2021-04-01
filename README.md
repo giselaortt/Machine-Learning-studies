@@ -5,4 +5,4 @@ Reimplementando os projetos em python conforme os vídeos desse canal (olhar a p
 https://www.youtube.com/channel/UCMSGXqLEE1q5NqG3hjA5vCg
 
 
-Bases de dados retiradas do site da UCI university ans kaggle
+Bases de dados retiradas do site da UCI university e kaggle
