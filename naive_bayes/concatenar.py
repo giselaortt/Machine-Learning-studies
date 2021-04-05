@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import os
 
 #TODO: parsear caracteres especiais: %@#/n etc
@@ -23,7 +24,9 @@ def train_prepare( folder_input_name, folder_output_name, training_size = 0.7 ):
         f_processado = open( folder_output_name+'/'+entry, 'w' )
         for name in os.listdir( os.path.join(folder_input_name, entry) ):
             for line in open(os.path.join(folder_input_name, entry, name),'r', encoding="ISO-8859-1" ):
-                f_processado.write( line )
+                #f_processado.write( re.sub(u'[^><#%&*()!$/\]', '', line) )
+                f_processado.write( line.strip('[^><#%&*()!$/\]') )
+
         f_processado.close()
 
 
