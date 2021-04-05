@@ -1,19 +1,10 @@
-
 from pathlib import Path
 import os
 
-#TODO: how to list all the subdirectories in a directory
-# List all subdirectories using os.listdir
-
-#TODO: how to list all files in a folder
-
-
-
-#TODO: how to concatenate every file in folder
-
+#TODO: parsear caracteres especiais: %@#/n etc
 
 folder_input_path = '20_newsgroups/'
-folder_output_name = 'nb_dados_processados/'
+folder_output_name = 'dados_processados/'
 
 def train_prepare( folder_input_name, folder_output_name, training_size = 0.7 ):
     subdiretorios = []
@@ -29,12 +20,11 @@ def train_prepare( folder_input_name, folder_output_name, training_size = 0.7 ):
         pass
 
     for entry in subdiretorios:
-        #TODO: create a file names entry
-        f = open( folder_output_name+'/'+entry, 'w' )
-        for lines in os.listdir( os.path.join(folder_input_name, entry) ):
-        #TODO print lines in the file
-            f.write(lines)
-        f.close()
+        f_processado = open( folder_output_name+'/'+entry, 'w' )
+        for name in os.listdir( os.path.join(folder_input_name, entry) ):
+            for line in open(os.path.join(folder_input_name, entry, name),'r', encoding="ISO-8859-1" ):
+                f_processado.write( line )
+        f_processado.close()
 
 
 train_prepare( folder_input_path , folder_output_name)
