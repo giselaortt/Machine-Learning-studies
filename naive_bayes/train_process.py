@@ -4,11 +4,12 @@ import os
 from sklearn.model_selection import train_test_split
 import nltk
 from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-
+nltk.download('stopwords')
+#from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.lancaster import LancasterStemmer
+#from nltk.stem.api import StemmerI
 
 folder_input_path = '20_newsgroups/'
-folder_output_name = 'dados_processados/'
 
 
 #This function will concatenate every file in directory and save in a file.
@@ -39,17 +40,20 @@ def split_files( source_dir, train_dir_name, test_dir_name, train_size = 0.7 ):
 #this function should remove things that are not relevant for naive bays algorithm
 def clean_text( file_name ):
 
-    filetemp = open( ,'w')
+    filetempname = file_name.rstrip('.txt') + 'temp'
+    filetemp = open( filetempname,'w')
     arquivo = open(file_name,'r')
-    text = file.read()
+    text = arquivo.read()
 
     #converter tudo para low-case letter
     text.lower()
 
     #remove stop-words: a, the, of, for etc.
-    text = ' '.join([word for word in text.split() if word not in (stopwords.words('english'))])
-
-    #TODO: extração de radicais
+    #pega apenas o radical de cada palavra
+    st = LancasterStemmer()
+    #TODO: remover todos os emails, datas e url's
+    #TODO: testar outros algoritimos de stem
+    text = ' '.join([st.stem(word) for word in text.split() if word not in (stopwords.words('english'))])
 
     #remove ponctuation
     text.strip('[.^><#%&*()!$/\]')
@@ -59,28 +63,34 @@ def clean_text( file_name ):
     text = re.sub('[0,9]', '', text)
 
     #filetemp e voltar para o file original, que é deletado
-    os.system('rm '+file_name)
+    os.system('rm '+ file_name)
     os.system('mv ' + filetempname + ' ' + file_name )
 
 
-def train_prepare( folder_input_name, folder_output_name, training_size = 0.7 ):
-    
+def train_prepare( folder_input_name, training_size = 0.7 ):
+
     classes = os.listdir(folder_input_name)
 
     #cria o diretorio de output caso ele nao exista.
-    os.mkdir("dados_processados/")
-    os.mkdir("dados_concatenados/")
-    os.mkdir("dados_concatenados/train/")
-    os.mkdir("dados_concatenados/test/")
+    try:
+        os.mkdir("dados_processados/")
+        os.mkdir("dados_concatenados/")
+        os.mkdir("dados_concatenados/train/")
+        os.mkdir("dados_concatenados/test/")
+    except:
+        pass
 
     for entry in classes:
 
         #cria os diretorios
         train_dir = "dados_processados/"+entry+"/train/"
         test_dir = "dados_processados/"+entry+"/test/"
-        os.mkdir("dados_processados/"+entry+"/")
-        os.mkdir(train_dir)
-        os.mkdir(test_dir)
+        try:
+            os.mkdir("dados_processados/"+entry+"/")
+            os.mkdir(train_dir)
+            os.mkdir(test_dir)
+        except:
+            pass
 
         #separa os testes e os treinamentos
         split_files(os.path.join(folder_input_name, entry), train_dir, test_dir, train_size = training_size)
@@ -91,11 +101,11 @@ def train_prepare( folder_input_name, folder_output_name, training_size = 0.7 ):
 
         for name in os.listdir( test_dir ):
             clean_text( os.path.join(test_dir, name))
- 
+
         #concatenar os dados
-        concatenate( test_dir, "dados_concatenados/train/" + entry + ".txt" )
-        concatenate( test_dir, "dados_concatenados/test/" + entry + ".txt" )
+        concatenate( "dados_concatenados/train/" + entry + ".txt", train_dir )
+        concatenate( "dados_concatenados/test/" + entry + ".txt", test_dir )
         
 
-trai_prepare( folder_input_path , folder_output_name)
+train_prepare( folder_input_path )
 
