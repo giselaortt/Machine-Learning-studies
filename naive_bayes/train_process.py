@@ -30,10 +30,11 @@ def split_files( source_dir, train_dir_name, test_dir_name, train_size = 0.7 ):
     train_files, test_files = train_test_split(file_names,train_size = train_size)    
     #copy training set
     for name in train_files:
-        os.system(' cp '+ os.path.join(source_dir, name) + ' ' + os.path.join(train_dir_name, name) )
+        os.system('cp '+ os.path.join(source_dir, name) + ' ' + os.path.join(train_dir_name, name) )
+        #print('cp '+ os.path.join(source_dir, name) + ' ' + os.path.join(train_dir_name, name)
     #copy testing set
     for name in test_files:
-        os.system(' cp '+ os.path.join(source_dir, name) + ' ' + os.path.join(train_dir_name, name) )
+        os.system('cp '+ os.path.join(source_dir, name) + ' ' + os.path.join(test_dir_name, name) )
     return
 
 
@@ -42,7 +43,7 @@ def clean_text( file_name ):
 
     filetempname = file_name.rstrip('.txt') + 'temp'
     filetemp = open( filetempname,'w')
-    arquivo = open(file_name,'r')
+    arquivo = open(file_name,'r', encoding = "ISO-8859-1" )
     text = arquivo.read()
 
     #converter tudo para low-case letter
@@ -61,6 +62,8 @@ def clean_text( file_name ):
     #remove numbers
     #tentar também: re.sub('\d', '', text) ou "\d+"
     text = re.sub('[0,9]', '', text)
+
+    filetemp.write( text )
 
     #filetemp e voltar para o file original, que é deletado
     os.system('rm '+ file_name)
@@ -93,6 +96,7 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
             pass
 
         #separa os testes e os treinamentos
+        print(os.path.join(folder_input_name, entry))
         split_files(os.path.join(folder_input_name, entry), train_dir, test_dir, train_size = training_size)
 
         #limpar os textos
