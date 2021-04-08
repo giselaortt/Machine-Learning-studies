@@ -19,7 +19,7 @@ def concatenate( file_name, directory_name ):
     for name in files:
         temp = open( os.path.join(directory_name, name), "r" )
         for line in temp.readlines():
-            fpointer.write( line.strip('[^><#%*()!$,/\]') )
+            fpointer.write( line.strip('[\"^><#%*()!$,/\]') )
         temp.close()
     fpointer.close()
 
@@ -49,15 +49,16 @@ def clean_text( file_name ):
     #converter tudo para low-case letter
     text.lower()
 
+    #remove ponctuation
+    text = re.sub("([^a-z ])", '', text)
+
     #remove stop-words: a, the, of, for etc.
     #pega apenas o radical de cada palavra
     st = LancasterStemmer()
+
     #TODO: remover todos os emails, datas e url's
     #TODO: testar outros algoritimos de stem
-    text = ' '.join([st.stem(word) for word in text.split() if word not in (stopwords.words('english'))])
-
-    #remove ponctuation
-    text.strip('[.^><#%&*()!$/\]')
+    text = ' '.join([st.stem(word)+' ' for word in text.split() if word not in (stopwords.words('english'))])
 
     #remove numbers
     #tentar também: re.sub('\d', '', text) ou "\d+"
