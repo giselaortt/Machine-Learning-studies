@@ -5,9 +5,13 @@ from sklearn.model_selection import train_test_split
 import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
+
+#best stemmer from the tested versions were poter stemmer
+from nltk.stem import PorterStemmer
 #from nltk.stem.snowball import SnowballStemmer
-from nltk.stem.lancaster import LancasterStemmer
+#from nltk.stem.lancaster import LancasterStemmer
 #from nltk.stem.api import StemmerI
+
 
 folder_input_path = '20_newsgroups/'
 
@@ -38,6 +42,7 @@ def split_files( source_dir, train_dir_name, test_dir_name, train_size = 0.7 ):
     return
 
 
+
 #this function should remove things that are not relevant for naive bays algorithm
 def clean_text( file_name ):
 
@@ -45,27 +50,59 @@ def clean_text( file_name ):
     filetemp = open( filetempname,'w')
     arquivo = open(file_name,'r', encoding = "ISO-8859-1" )
     text = arquivo.read()
+    lines = text.split('\n')
+
+    #remover todos os emails, datas e url's
+    #deletando as descrições da base de dados. essa etapa não é essencial, mas quero fazer mesmo asism.
+    lines_to_delete = [
+	"Xref:",
+        "Approved:",
+	"Path:",
+	"From:",
+        "Reply-To:",
+	"Newsgroups:",
+	"Subject:",
+	"Message-ID:",
+	"Date:",
+	"Article-I.D.:",
+	"Sender:",
+	"Distribution:",
+	"Organization:",
+	"Lines:",
+	"Nntp-Posting-Host:",
+    ]
+
+    to_delete = []
+    for i, line in zip( range(len(lines)),lines ):
+        words = line.strip('\n\r\f\t\b').split(' ')
+        if words[0] in lines_to_delete:
+            to_delete.append(line)
+
+    for i in to_delete:
+        lines.remove(i)
+
+    text = ' '.join(lines)
 
     #converter tudo para low-case letter
     text.lower()
 
-    #remove ponctuation
-    text = re.sub("([^a-z ])", '', text)
-
     #remove stop-words: a, the, of, for etc.
     #pega apenas o radical de cada palavra
-    st = LancasterStemmer()
+    #apaga todos os emails
+#    st = SnowballStemmer('english')
+    st = PorterStemmer()
+    text = ' '.join([st.stem(word)+' ' for word in text.split(' ') if(word not in stopwords.words('english') and '@' not in word)])    
 
-    #TODO: remover todos os emails, datas e url's
-    #TODO: testar outros algoritimos de stem
-    text = ' '.join([st.stem(word)+' ' for word in text.split() if word not in (stopwords.words('english'))])
+    #remove ponctuation
+    text = re.sub("([^a-z \n])", '', text)
 
     #remove numbers
     #tentar também: re.sub('\d', '', text) ou "\d+"
-    text = re.sub('[0,9]', '', text)
+    #text = re.sub('[0,9]', '', text)
 
     filetemp.write( text )
-
+    filetemp.close()
+    arquivo.close()
     #filetemp e voltar para o file original, que é deletado
     os.system('rm '+ file_name)
     os.system('mv ' + filetempname + ' ' + file_name )
@@ -85,7 +122,6 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
         pass
 
     for entry in classes:
-
         #cria os diretorios
         train_dir = "dados_processados/"+entry+"/train/"
         test_dir = "dados_processados/"+entry+"/test/"
@@ -110,7 +146,6 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
         #concatenar os dados
         concatenate( "dados_concatenados/train/" + entry + ".txt", train_dir )
         concatenate( "dados_concatenados/test/" + entry + ".txt", test_dir )
-        
 
 train_prepare( folder_input_path )
 
