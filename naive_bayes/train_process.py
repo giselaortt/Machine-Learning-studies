@@ -145,7 +145,8 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
 
         #concatenar os dados
         concatenate( "dados_concatenados/train/" + entry + ".txt", train_dir )
-        concatenate( "dados_concatenados/test/" + entry + ".txt", test_dir )
+        #não concatenar os dados de teste!
+        #concatenate( "dados_concatenados/test/" + entry + ".txt", test_dir )
 
 train_prepare( folder_input_path )
 
