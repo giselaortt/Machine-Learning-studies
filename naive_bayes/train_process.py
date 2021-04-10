@@ -42,10 +42,8 @@ def split_files( source_dir, train_dir_name, test_dir_name, train_size = 0.7 ):
     return
 
 
-
 #this function should remove things that are not relevant for naive bays algorithm
 def clean_text( file_name ):
-
     filetempname = file_name.rstrip('.txt') + 'temp'
     filetemp = open( filetempname,'w')
     arquivo = open(file_name,'r', encoding = "ISO-8859-1" )
@@ -94,7 +92,9 @@ def clean_text( file_name ):
     text = ' '.join([st.stem(word)+' ' for word in text.split(' ') if(word not in stopwords.words('english') and '@' not in word)])    
 
     #remove ponctuation
-    text = re.sub("([^a-z \n])", '', text)
+    text = re.sub("([^a-z \n])", ' ', text)
+    text = re.sub(' {2,}', ' ', text)
+    print(text)
 
     #remove numbers
     #tentar também: re.sub('\d', '', text) ou "\d+"
