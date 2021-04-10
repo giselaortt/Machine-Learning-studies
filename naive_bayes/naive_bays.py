@@ -2,17 +2,35 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-
+import os
 
 
 class NaiveBayes:
-    def __init__(self, database, ycolumn = None):
-        self.database = pd.DataFrame(database)
-        if( ycolumn is None ):
-            ycolumn = database.shape[1]-1
-            self.ycolumn = ycolumn
-            self.classes = pd.unique( database.iloc[:,ycolumn] )
+#   #anigo init, feito a partir de uma base da dados já pronta
+#    def __init__(self, database, ycolumn = None):
+#        self.database = pd.DataFrame(database)
+#        if( ycolumn is None ):
+#            ycolumn = database.shape[1]-1
+#            self.ycolumn = ycolumn
+#            self.classes = pd.unique( database.iloc[:,ycolumn] )
+#
 
+    #Novo init. recebe um diretório com todos os arquivos e classes e monta a base de dados.
+    #dir_name: type string
+    def __init__( self, dir_name ):
+        files = os.listdir(dir_name)
+        self.classes = [ name.rstrip('.txt') for name in files ]
+        bag_of_words = set()
+        for filename in files:
+            temp = open( dir_name+'/'+filename, 'r' )
+            list_of_words = temp.read().split(' ')
+            bag_of_words.update(list_of_words)
+            temp.close()
+        self.database = pd.DataFrame( np.zeros((len(bag_of_words), len(self.classes))), index = bag_of_words, columns = self.classes )
+        print(self.database.head())
+
+
+    #query: type pandas.dataframe. should contain list of frequencies associated with each class
     def query( self, query ):
         #lista de probabbilidades para cada possível output
         probabilities = []
@@ -28,27 +46,27 @@ class NaiveBayes:
         probabilities = [ (float)(i) / soma for i in probabilities]
         #retornar a classe correspondente a maior probabilidade
 
+
         return self.classes[np.argmax( probabilities )]
         #TODO: print probabilities for all the classes insted of just showing the biggest one
-
-
-    #TODO:
-    def bag_of_words():
-        pass
 
 
     #should return a dataframe with all the words present on the document and its normalized freequency
     def term_frequency( text ):
         list_of_words = text.split(' ')
-        words_unique = set(list_of_words)
-        term_frequency = dict.fromkeys( words.unique, 0 )
+        words_unique = list(set(list_of_words))
+        
+        term_frequency = dict.fromkeys( words_unique, 0 )
         total = 0
         for word in list_of_words:
             term_frequency[words] += 1
             total += 1
         for word, repetitions in term_frequency.items():
             term_frequency[word] = repetitions / total
+
         #TODO: passar para dataframe
+        #TODO: testar TF do sklearn
+
         return term_frequency
 
 
@@ -82,7 +100,8 @@ class NaiveBayes:
 
 
 
+
 if __name__ == '__main__':
     #tests
-    pass
-    
+    data_directory = 'dados_concatenados/train/'
+    nb = NaiveBayes(data_directory)    
