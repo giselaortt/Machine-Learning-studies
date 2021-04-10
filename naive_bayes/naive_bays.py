@@ -6,28 +6,42 @@ import os
 
 
 class NaiveBayes:
-#   #anigo init, feito a partir de uma base da dados já pronta
-#    def __init__(self, database, ycolumn = None):
-#        self.database = pd.DataFrame(database)
-#        if( ycolumn is None ):
-#            ycolumn = database.shape[1]-1
-#            self.ycolumn = ycolumn
-#            self.classes = pd.unique( database.iloc[:,ycolumn] )
-#
+    def __init__( self, data = None, dir_name = None ):
+        if data is not None:
+            self.database = pd.read_csv(data)
+            print(self.database.head())
+        else:
+            self.data_prepare(dir_name)
 
-    #Novo init. recebe um diretório com todos os arquivos e classes e monta a base de dados.
+
+    #prepares the data in the naive bayes form with ter-frequency per class
     #dir_name: type string
-    def __init__( self, dir_name ):
+    def data_prepare( self, dir_name ):
         files = os.listdir(dir_name)
-        self.classes = [ name.rstrip('.txt') for name in files ]
-        bag_of_words = set()
+        classes = [ name.rstrip('.txt') for name in files ]
+        n_classes = len(classes)
+        self.database = pd.DataFrame(np.zeros((0, len(classes))), columns = classes )
+        #bag_of_words = set()
         for filename in files:
             temp = open( dir_name+'/'+filename, 'r' )
             list_of_words = temp.read().split(' ')
-            bag_of_words.update(list_of_words)
+            bag_of_words= set(list_of_words)
+        #    for word in bag_of_words:
+        #        if word not in self.database:
+        #            self.database.loc[word] = np.zeros(len(classes))
+            for word in list_of_words:
+                if word not in self.database.index:
+                    self.database.loc[word] = np.zeros(n_classes)
+                    self.database[filename.rstrip('.txt')][word] = 1
+                else:
+                    self.database[filename.rstrip('.txt')][word] += 1
+            nwords = len(list_of_words)
+            self.database[filename.rstrip('.txt')] = self.database[filename.rstrip('.txt')]/float(nwords)
             temp.close()
-        self.database = pd.DataFrame( np.zeros((len(bag_of_words), len(self.classes))), index = bag_of_words, columns = self.classes )
+            print(self.database.head())
+#        self.database = pd.DataFrame( np.zeros((len(bag_of_words), len(self.classes))), index = bag_of_words, columns = self.classes )
         print(self.database.head())
+        self.database.to_csv("nbdata.csv")
 
 
     #query: type pandas.dataframe. should contain list of frequencies associated with each class
@@ -51,24 +65,24 @@ class NaiveBayes:
         #TODO: print probabilities for all the classes insted of just showing the biggest one
 
 
-    #should return a dataframe with all the words present on the document and its normalized freequency
-    def term_frequency( text ):
-        list_of_words = text.split(' ')
-        words_unique = list(set(list_of_words))
-        
-        term_frequency = dict.fromkeys( words_unique, 0 )
-        total = 0
-        for word in list_of_words:
-            term_frequency[words] += 1
-            total += 1
-        for word, repetitions in term_frequency.items():
-            term_frequency[word] = repetitions / total
-
-        #TODO: passar para dataframe
-        #TODO: testar TF do sklearn
-
-        return term_frequency
-
+#    #should return a dataframe with all the words present on the document and its normalized freequency
+#    def term_frequency( text ):
+#        list_of_words = text.split(' ')
+#        words_unique = list(set(list_of_words))
+#        
+#        term_frequency = dict.fromkeys( words_unique, 0 )
+#        total = 0
+#        for word in list_of_words:
+#            term_frequency[words] += 1
+#            total += 1
+#        for word, repetitions in term_frequency.items():
+#            term_frequency[word] = repetitions / total
+#
+#        #TODO: passar para dataframe
+#        #TODO: testar TF do sklearn
+#
+#        return term_frequency
+#
 
     #TODO: IDF
     def IDF():
@@ -104,4 +118,4 @@ class NaiveBayes:
 if __name__ == '__main__':
     #tests
     data_directory = 'dados_concatenados/train/'
-    nb = NaiveBayes(data_directory)    
+    nb = NaiveBayes(dir_name = data_directory)    
