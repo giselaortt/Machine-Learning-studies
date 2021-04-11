@@ -6,12 +6,10 @@ import os
 
 
 class NaiveBayes:
-    def __init__( self, data = None, dir_name = None ):
-        if data is not None:
-            self.database = pd.read_csv(data)
-            print(self.database.head())
-        else:
-            self.data_prepare(dir_name)
+    def __init__( self, data = None, epsilon = 1e-7 ):
+        self.database = pd.read_csv(data, index_col = 0)
+        print(self.database.head())
+        self.epsilon = epsilon
 
 
     #prepares the data in the naive bayes form with ter-frequency per class
@@ -21,14 +19,9 @@ class NaiveBayes:
         classes = [ name.rstrip('.txt') for name in files ]
         n_classes = len(classes)
         self.database = pd.DataFrame(np.zeros((0, len(classes))), columns = classes )
-        #bag_of_words = set()
         for filename in files:
             temp = open( dir_name+'/'+filename, 'r' )
             list_of_words = temp.read().split(' ')
-            bag_of_words= set(list_of_words)
-        #    for word in bag_of_words:
-        #        if word not in self.database:
-        #            self.database.loc[word] = np.zeros(len(classes))
             for word in list_of_words:
                 if word not in self.database.index:
                     self.database.loc[word] = np.zeros(n_classes)
@@ -38,30 +31,51 @@ class NaiveBayes:
             nwords = len(list_of_words)
             self.database[filename.rstrip('.txt')] = self.database[filename.rstrip('.txt')]/float(nwords)
             temp.close()
-            print(self.database.head())
-#        self.database = pd.DataFrame( np.zeros((len(bag_of_words), len(self.classes))), index = bag_of_words, columns = self.classes )
-        print(self.database.head())
         self.database.to_csv("nbdata.csv")
 
 
-    #query: type pandas.dataframe. should contain list of frequencies associated with each class
-    def query( self, query ):
-        #lista de probabbilidades para cada possível output
-        probabilities = []
-        for instance in self.classes:
-            freq_i = len( self.database.loc[ self.database.iloc[:,self.ycolumn] == instance ] )
-            prob_class_i = freq_i/ self.database.shape[0]
-            for i, condition in zip(range(self.database.shape[1]),query):
-                if condition is not None:
-                  prob_class_i = prob_class_i*(len( self.database.loc[ (self.database.iloc[:,self.ycolumn]==instance)&(self.database.iloc[:,i] == condition) ])/freq_i )
-            probabilities.append( prob_class_i )
-        #normalizar probabilities
-        soma = sum( probabilities )
-        probabilities = [ (float)(i) / soma for i in probabilities]
-        #retornar a classe correspondente a maior probabilidade
+    #query: type: string. should be the name of a file with the text.
+    def query( self, filename ):
+        fileptr = open(filename)
+        text = fileptr.read()
+        words = text.split(' ')
+        fileptr.close()
+        #a prob inicial é 1 / o numero de classes
+        words = [ word for word in words if word in self.database.index ]
+        #probs_per_class = np.log( np.array( [1/len(self.database.columns)]*len(self.database.columns)))
+        #como meu dataset está balanceado, PARA ESSE PROBLEMA, a probabilidade por classe será igual para todos, então usarei uma constante ao invés de um vetor.
+        p_cj = 1.0/float(len(self.database.columns))
+        frequencies = self.database.loc[ words ].apply( lambda row: row/np.sum(row)+self.epsilon, axis = 1 )
+        probs = frequencies.apply( lambda classe: np.log(np.sum(classe))+p_cj,axis = 0 )
+        probs = probs.apply(np.exp)
+        print( probs )
+        return self.database.columns[np.argmax( probs )]
 
+#        for classe, i in zip(self.database.columns, range(len(self.database.columns)) ):
+#            for word in words:
+#                #usar log para não perder a precisão quando multiplicar numeros muito pequenos
+#                if word in self.database.index :
+#                    probs[i] = probs[i] + np.log(self.database[classe][word])
+#                else:
+#                    pass
 
-        return self.classes[np.argmax( probabilities )]
+        #aplicar exponencial
+#        probs = np.exp(probs)
+        #mostrar probabilidades
+#        for classe, prob in zip(self.database.columns, probs):
+#            print( classe, ": ", prob )
+
+#        for instance in self.classes:
+#            freq_i = len( self.database.loc[ self.database.iloc[:,self.ycolumn] == instance ] )
+#            prob_class_i = freq_i/ self.database.shape[0]
+#            for i, condition in zip(range(self.database.shape[1]),query):
+#                if condition is not None:
+#                  prob_class_i = prob_class_i*(len( self.database.loc[ (self.database.iloc[:,self.ycolumn]==instance)&(self.database.iloc[:,i] == condition) ])/freq_i )
+#            probs.append( prob_class_i )
+#        soma = sum( probs )
+#        probs = [ (float)(i) / soma for i in probs]
+#
+
         #TODO: print probabilities for all the classes insted of just showing the biggest one
 
 
@@ -118,4 +132,9 @@ class NaiveBayes:
 if __name__ == '__main__':
     #tests
     data_directory = 'dados_concatenados/train/'
-    nb = NaiveBayes(dir_name = data_directory)    
+    nb = NaiveBayes("nbdata.csv")
+    ans = nb.query("dados_processados/rec.sport.hockey/test/53739")
+    print( "winner = ", ans )
+
+
+

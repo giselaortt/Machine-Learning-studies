@@ -55,6 +55,14 @@ def clean_text( file_name ):
     lines_to_delete = [
 	"Xref:",
         "Approved:",
+        "Nntp-Posting-Host:",
+        "Expires:",
+        "Keywords:",
+        "Summary:",
+        "Followup-To:",
+        "References:",
+        "X-To:",
+        "X-Received:",
 	"Path:",
 	"From:",
         "Reply-To:",
@@ -91,14 +99,10 @@ def clean_text( file_name ):
     st = PorterStemmer()
     text = ' '.join([st.stem(word)+' ' for word in text.split(' ') if(word not in stopwords.words('english') and '@' not in word)])    
 
-    #remove ponctuation
+    #remove ponctuation, numbers, tabs, etc
     text = re.sub("([^a-z \n])", ' ', text)
+    #remove extra spaces
     text = re.sub(' {2,}', ' ', text)
-    print(text)
-
-    #remove numbers
-    #tentar também: re.sub('\d', '', text) ou "\d+"
-    #text = re.sub('[0,9]', '', text)
 
     filetemp.write( text )
     filetemp.close()
