@@ -59,7 +59,6 @@ class NaiveBayes:
         pass
 
 
-    #TODO: to be implemented
     def test_final( self, dir_name ):
         try:
             tests = os.listdir( dir_name )
@@ -70,17 +69,22 @@ class NaiveBayes:
         number_right_answers = 0
         number_wrong_answers = 0
         for classe in tests:
+            class_right =0
+            class_wrong = 0
             filenames = os.listdir(dir_name+'/'+classe+'/test/')
             for name in filenames:
                 ans = self.query(dir_name+'/'+classe+'/test/'+name)
                 if ans == classe:
                     number_right_answers += 1
+                    class_right += 1
                 else:
                     #print(ans,"  ",classe)
                     number_wrong_answers += 1
+                    class_wrong += 1
             print("classe ", classe, ":")
-            print("\tacertos: ", number_right_answers)
-            print("\terros: ", number_wrong_answers, "\n\n")
+            print("\tacertos: ", class_right)
+            print("\terros: ", class_wrong)
+            print("\tacurácia da classe:", float(class_right)/float(class_right+class_wrong), "\n\n")
 
         return float(number_right_answers) / float(number_right_answers + number_wrong_answers)
 
