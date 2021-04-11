@@ -35,7 +35,7 @@ class NaiveBayes:
 
 
     #query: type: string. should be the name of a file with the text.
-    def query( self, filename ):
+    def query( self, filename, silent = True ):
         fileptr = open(filename)
         text = fileptr.read()
         words = text.split(' ')
@@ -48,7 +48,8 @@ class NaiveBayes:
         frequencies = self.database.loc[ words ].apply( lambda row: row/np.sum(row)+self.epsilon, axis = 1 )
         probs = frequencies.apply( lambda classe: np.log(np.sum(classe))+p_cj,axis = 0 )
         probs = probs.apply(np.exp)
-        print( probs )
+        if( not silent ):
+            print( probs )
 
         return self.database.columns[np.argmax( probs )]
 
@@ -59,32 +60,34 @@ class NaiveBayes:
 
 
     #TODO: to be implemented
-    def test_full_naive( dir_name, expected_output ):
-        y =  pd.read_csv(expected_output)
-        print(y.head())
+    def test_final( self, dir_name ):
         try:
             tests = os.listdir( dir_name )
         except:
             print("o diretorio não existe!")
             return
+
         number_right_answers = 0
-        for test in tests:
-            pass
-            #TODO: Testar esse arquivo em especifico
+        number_wrong_answers = 0
+        for classe in tests:
+            filenames = os.listdir(dir_name+'/'+classe+'/test/')
+            for name in filenames:
+                ans = self.query(dir_name+'/'+classe+'/test/'+name)
+                if ans == classe:
+                    number_right_answers += 1
+                else:
+                    #print(ans,"  ",classe)
+                    number_wrong_answers += 1
+            print("classe ", classe, ":")
+            print("\tacertos: ", number_right_answers)
+            print("\terros: ", number_wrong_answers, "\n\n")
 
-            #TODO: comparar resultado com o resultado esperado
-            #if correto -> number_right_answers++
-
-        #TODO: retornar a acuracia
-        #return float(number_right_answers) / len(tests)
+        return float(number_right_answers) / float(number_right_answers + number_wrong_answers)
 
 
 if __name__ == '__main__':
     #tests
-    data_directory = 'dados_concatenados/train/'
     nb = NaiveBayes("nbdata.csv")
-    ans = nb.query("dados_processados/rec.sport.hockey/test/53739")
-    print( "winner = ", ans )
-
+    print("acuracia = ", nb.test_final("dados_processados"))
 
 
