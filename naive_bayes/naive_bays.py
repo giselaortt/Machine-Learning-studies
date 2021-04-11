@@ -49,64 +49,16 @@ class NaiveBayes:
         probs = frequencies.apply( lambda classe: np.log(np.sum(classe))+p_cj,axis = 0 )
         probs = probs.apply(np.exp)
         print( probs )
+
         return self.database.columns[np.argmax( probs )]
 
-#        for classe, i in zip(self.database.columns, range(len(self.database.columns)) ):
-#            for word in words:
-#                #usar log para não perder a precisão quando multiplicar numeros muito pequenos
-#                if word in self.database.index :
-#                    probs[i] = probs[i] + np.log(self.database[classe][word])
-#                else:
-#                    pass
 
-        #aplicar exponencial
-#        probs = np.exp(probs)
-        #mostrar probabilidades
-#        for classe, prob in zip(self.database.columns, probs):
-#            print( classe, ": ", prob )
-
-#        for instance in self.classes:
-#            freq_i = len( self.database.loc[ self.database.iloc[:,self.ycolumn] == instance ] )
-#            prob_class_i = freq_i/ self.database.shape[0]
-#            for i, condition in zip(range(self.database.shape[1]),query):
-#                if condition is not None:
-#                  prob_class_i = prob_class_i*(len( self.database.loc[ (self.database.iloc[:,self.ycolumn]==instance)&(self.database.iloc[:,i] == condition) ])/freq_i )
-#            probs.append( prob_class_i )
-#        soma = sum( probs )
-#        probs = [ (float)(i) / soma for i in probs]
-#
-
-        #TODO: print probabilities for all the classes insted of just showing the biggest one
-
-
-#    #should return a dataframe with all the words present on the document and its normalized freequency
-#    def term_frequency( text ):
-#        list_of_words = text.split(' ')
-#        words_unique = list(set(list_of_words))
-#        
-#        term_frequency = dict.fromkeys( words_unique, 0 )
-#        total = 0
-#        for word in list_of_words:
-#            term_frequency[words] += 1
-#            total += 1
-#        for word, repetitions in term_frequency.items():
-#            term_frequency[word] = repetitions / total
-#
-#        #TODO: passar para dataframe
-#        #TODO: testar TF do sklearn
-#
-#        return term_frequency
-#
-
-    #TODO: IDF
+    #TODO: IDF to be implemented
     def IDF():
         pass
 
 
-    #TODO:
-    #dir_name: type string. contains the name of the directtory with all the files to text.
-    #expected_output: type string. name of a file, witch should contain the list of all the files in the directory and its expected classes.
-    #TODO: PROBLEMA: term frequency only returns a dict with the words from that class, i would like it to asign the value 0 to the words it doesnt have, that are in the vocabulary.
+    #TODO: to be implemented
     def test_full_naive( dir_name, expected_output ):
         y =  pd.read_csv(expected_output)
         print(y.head())
@@ -125,8 +77,6 @@ class NaiveBayes:
 
         #TODO: retornar a acuracia
         #return float(number_right_answers) / len(tests)
-
-
 
 
 if __name__ == '__main__':

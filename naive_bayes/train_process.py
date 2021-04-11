@@ -12,7 +12,6 @@ from nltk.stem import PorterStemmer
 #from nltk.stem.lancaster import LancasterStemmer
 #from nltk.stem.api import StemmerI
 
-
 folder_input_path = '20_newsgroups/'
 
 
@@ -98,6 +97,8 @@ def clean_text( file_name ):
 #    st = SnowballStemmer('english')
     st = PorterStemmer()
     text = ' '.join([st.stem(word)+' ' for word in text.split(' ') if(word not in stopwords.words('english') and '@' not in word)])    
+
+    #TODO: lidar melhor com os apóstrofos
 
     #remove ponctuation, numbers, tabs, etc
     text = re.sub("([^a-z \n])", ' ', text)
