@@ -10,9 +10,9 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
  
 ### Resultados:
 
-	*Acurácia geral:  0.6825 ou 68.25%
+	* Acurácia geral:  0.6825 ou 68.25%
 
-	*Acurácia por classe:
+	* Acurácia por classe:
 		comp.graphics:
 			acertos:  235
 			erros:  65
@@ -108,15 +108,15 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
 			erros:  68
 			acurácia: 0.7733333333333333 
 
-	*Matriz de confusão: 
+	* Matriz de confusão: 
 				aguardando a implementação
 
 
 ### O que ainda precisa ser feito:
-	*Tratar o caso dos apóstrofos(no momento estão sendo apenas deletados, mas como são parte da lingua inglesa merecem um tratamento especial)
-	*Comentarários
-	*Tornar pytonico
-	*Testar a complexidade e possivelmente reduzí-la
-	*Implementar a métrica IDF e testar se ela reduz o erro
-	*Implementar a matriz de confusão
-	*Tratar a divisão por zero nos logarítimos
+	* Tratar o caso dos apóstrofos(no momento estão sendo apenas deletados, mas como são parte da lingua inglesa merecem um tratamento especial)
+	* Comentarários
+	* Tornar pytonico
+	* Testar a complexidade e possivelmente reduzí-la
+	* Implementar a métrica IDF e testar se ela reduz o erro
+	* Implementar a matriz de confusão
+	* Tratar a divisão por zero nos logarítimos
