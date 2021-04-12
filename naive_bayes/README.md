@@ -1,14 +1,14 @@
 
-#Naive Bayes text classifier
+# Naive Bayes para classificação de textos
 
-###Dados:
+### Dados:
 Dados foram tirados daqui https://archive.ics.uci.edu/ml/datasets/Twenty+Newsgroups
 
 
-###Referências:
+### Referências:
 A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/watch?v=JvvDN_zSXxU&list=PLKWX1jIoUZaWY_4zxjLXnIMU1Suyaa4VX&index=30
  
-###Resultados:
+### Resultados:
 
 	*Acurácia geral:  0.6825 ou 68.25%
 
@@ -112,8 +112,7 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
 				aguardando a implementação
 
 
-###O que ainda precisa ser feito:
-
+### O que ainda precisa ser feito:
 	*Tratar o caso dos apóstrofos(no momento estão sendo apenas deletados, mas como são parte da lingua inglesa merecem um tratamento especial)
 	*Comentarários
 	*Tornar pytonico
