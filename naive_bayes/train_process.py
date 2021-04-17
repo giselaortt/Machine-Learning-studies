@@ -100,8 +100,10 @@ def clean_text( file_name ):
 
     #TODO: lidar melhor com os apóstrofos
 
-    #remove ponctuation, numbers, tabs, etc
-    text = re.sub("([^a-z \n])", ' ', text)
+    #remove ponctuation, numbers, tabs, etc. substituindo por um espaço para que palavras separadas por outros caracteres não acabassem aglutinadas.
+    text = re.sub("([^a-z '\n])", ' ', text)
+    #eu não queria que as palavras com apostrofo (') fossem separadas, e sim, juntas. don't -> dont, e não don t
+    text = re.sub("([^a-z \n])", '', text)
     #remove extra spaces
     text = re.sub(' {2,}', ' ', text)
 
@@ -138,7 +140,7 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
             pass
 
         #separa os testes e os treinamentos
-        print(os.path.join(folder_input_name, entry))
+        print("processando a classe: ",os.path.join(folder_input_name, entry))
         split_files(os.path.join(folder_input_name, entry), train_dir, test_dir, train_size = training_size)
 
         #limpar os textos
@@ -152,6 +154,7 @@ def train_prepare( folder_input_name, training_size = 0.7 ):
         concatenate( "dados_concatenados/train/" + entry + ".txt", train_dir )
         #não concatenar os dados de teste!
         #concatenate( "dados_concatenados/test/" + entry + ".txt", test_dir )
+
 
 train_prepare( folder_input_path )
 
