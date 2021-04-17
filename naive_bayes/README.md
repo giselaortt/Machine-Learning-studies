@@ -10,9 +10,9 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
  
 ### Resultados:
 
-	*Acurácia geral:  0.8072080579162733 (~80%)
+	* Acurácia geral:  0.8072080579162733 (~80%)
 
-	*Acurácia por classe:
+	* Acurácia por classe:
 		soc.religion.christian :
 			acertos:  486
 			erros:  168
@@ -23,7 +23,6 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
 			acertos:  224
 			erros:  76
 			acurácia da classe: 0.7466666666666667 
-
 
 		talk.politics.guns :
 			acertos:  273
@@ -132,14 +131,15 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
 			erros:  65
 			acurácia da classe: 0.7833333333333333 
 
-	*Matriz de confusão: 
+	* Matriz de confusão: 
 				aguardando a implementação
 
 
 ### O que ainda precisa ser feito:
-	*Comentarários
-	*Tornar pytonico
-	*Testar a complexidade e possivelmente reduzí-la
-	*Implementar a métrica IDF e testar se ela reduz o erro
-	*Implementar a matriz de confusão
-	*Tratar a divisão por zero nos logarítimos
+	* Comentarários
+	* Tornar pytonico
+	* Testar a complexidade e possivelmente reduzí-la
+	* Implementar a métrica IDF e testar se ela reduz o erro
+	* Implementar a matriz de confusão
+	* Tratar a divisão por zero nos logarítimos
+=
