@@ -140,4 +140,3 @@ Project idea and guidelines were taken from this video https://www.youtube.com/w
 	- Change to IDF metrics and compare results
 	- Confusion Matrix
 	- Division for zero on the logaritmos need to be handled
-=
