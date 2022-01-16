@@ -1,18 +1,18 @@
 
-# Naive Bayes para classificação de textos
+# Naive Bayes for text classification:
 
-### Dados:
-Dados foram tirados daqui https://archive.ics.uci.edu/ml/datasets/Twenty+Newsgroups
+### Data:
+Data extracted from here https://archive.ics.uci.edu/ml/datasets/Twenty+Newsgroups
 
 
-### Referências:
-A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/watch?v=JvvDN_zSXxU&list=PLKWX1jIoUZaWY_4zxjLXnIMU1Suyaa4VX&index=30
+### Reference:
+Project idea and guidelines were taken from this video https://www.youtube.com/watch?v=JvvDN_zSXxU&list=PLKWX1jIoUZaWY_4zxjLXnIMU1Suyaa4VX&index=30
  
-### Resultados:
+### Results:
 
-	* Acurácia geral:  0.8072080579162733 (~80%)
+	- General accuracy:  0.8072080579162733 (~80%)
 
-	* Acurácia por classe:
+	- accuracy per class:
 		soc.religion.christian :
 			acertos:  486
 			erros:  168
@@ -131,15 +131,13 @@ A ideia e as guidelines do projeto foram tirados daqui https://www.youtube.com/w
 			erros:  65
 			acurácia da classe: 0.7833333333333333 
 
-	* Matriz de confusão: 
-				aguardando a implementação
+	- Matriz de confusão: 
+				to be implemented
 
 
-### O que ainda precisa ser feito:
-	* Comentarários
-	* Tornar pytonico
-	* Testar a complexidade e possivelmente reduzí-la
-	* Implementar a métrica IDF e testar se ela reduz o erro
-	* Implementar a matriz de confusão
-	* Tratar a divisão por zero nos logarítimos
+### To be implemented:
+	- Refactor according to clean code guidelines
+	- Change to IDF metrics and compare results
+	- Confusion Matrix
+	- Division for zero on the logaritmos need to be handled
 =
