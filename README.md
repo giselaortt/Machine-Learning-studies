@@ -22,6 +22,7 @@ O canal pertence ao professor Rodrigo Mello, que implementou os projetos em R. E
 - mlp
 - naive_bayes
 - rbf
+- k-means
 
 # To be implemented:
 - Decision Trees
