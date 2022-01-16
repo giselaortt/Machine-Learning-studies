@@ -25,3 +25,4 @@ O canal pertence ao professor Rodrigo Mello, que implementou os projetos em R. E
 
 # To be implemented:
 - Decision Trees
+- SVM
