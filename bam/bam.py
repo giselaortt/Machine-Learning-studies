@@ -15,15 +15,15 @@ class BAM:
 
 	def recover_x(self, x):
 	
-		old_entropia = 0
-		new_entropia = 0
+		old_entropy = 0
+		new_entropy = 0
 		delta = 1
 
 		while( delta != 0 ):
 			y = self.acess_y( x )
-			new_entropia = entropia( x, self.matrix, y )
-			delta = abs( old_entropia - new_entropia )
-			old_entropia = new_entropia
+			new_entropy = entropy( x, self.matrix, y )
+			delta = abs( old_entropy - new_entropy )
+			old_entropy = new_entropy
 			x = self.acess_x( y )
 
 		return x
@@ -31,15 +31,15 @@ class BAM:
 
 	def recover_y(self, y):
 	
-		old_entropia = 0
-		new_entropia = 0
+		old_entropy = 0
+		new_entropy = 0
 		delta = 1
 
 		while( delta != 0 ):
 			x = self.acess_x( y )
-			new_entropia = entropia( y, self.matrix.T, x )
-			delta = abs( old_entropia - new_entropia )
-			old_entropia = new_entropia
+			new_entropy = entropy( y, self.matrix.T, x )
+			delta = abs( old_entropy - new_entropy )
+			old_entropy = new_entropy
 			y = self.acess_y( x )
 
 		return y
@@ -58,7 +58,7 @@ def binary( vector ):
 	return (vector/abs(vector)).astype(float)
 
 
-def entropia( padrao, matriz, saida ):
+def entropy( padrao, matriz, saida ):
 	return np.inner( np.inner( padrao, matriz.T  ), saida )
 
 

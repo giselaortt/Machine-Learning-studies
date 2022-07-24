@@ -25,4 +25,3 @@ class dwnn:
 	def predict( self, data ):
 		return np.array([ self.query(row) for row in data ])
 
-	
