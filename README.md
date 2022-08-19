@@ -27,3 +27,4 @@ O canal pertence ao professor Rodrigo Mello, que implementou os projetos em R. E
 - Decision Trees
 - SVM
 - RBF
+- Swarm Particle Optimization
