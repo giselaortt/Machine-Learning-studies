@@ -17,14 +17,15 @@ O canal pertence ao professor Rodrigo Mello, que implementou os projetos em R. E
 
 # Implemented :
 - bam
-- dwnn
-- knn
-- mlp
-- naive_bayes
+- DWNN (distanced weighted nearest neighboors)
+- KNN (k-nearest neighboors)
+- MLP (multilayer perceptron)
+- naive bayes
 - k-means
 
 # To be implemented:
 - Decision Trees
-- SVM
-- RBF
+- SVM (suport vector machine)
+- RBF (radial basis function)
+- multinomial naive bayes
 - Swarm Particle Optimization
